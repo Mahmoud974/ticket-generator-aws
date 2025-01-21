@@ -121,7 +121,6 @@ export default function Formulaire() {
       setUserData({ fullName, email, github, photo });
       navigate("/ticket");
       console.log({ fullName, email, github, photo });
-      alert("Form submitted successfully!");
     }
   };
 
