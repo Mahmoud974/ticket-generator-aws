@@ -1,7 +1,9 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { CloudUpload, Info } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useUserContext } from "./hook/useContext";
+import { useDataFetch } from "./hook/useDataFetch";
+import postTicket from "./api/axiosInstance";
 
 export default function Formulaire() {
   const { setUserData } = useUserContext();
@@ -18,6 +20,8 @@ export default function Formulaire() {
     github: "",
     photo: "",
   });
+  const { data } = useDataFetch();
+  console.log(data);
 
   const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     console.log(photoError);
@@ -141,9 +145,15 @@ export default function Formulaire() {
         <p className="my-5">
           Secure your spot at next year's biggest coding conference.
         </p>
-        <form onSubmit={handleFormSubmit} className="space-y-4">
+        <form
+          action="/submit"
+          method="POST"
+          encType="multipart/form-data"
+          onSubmit={handleFormSubmit}
+          className="space-y-4"
+        >
           <div>
-            <label className="block text-left text-sm mb-2">
+            <label className="block text-left text-sm mb-2" htmlFor="image">
               Upload Avatar
             </label>
             <div
@@ -175,7 +185,7 @@ export default function Formulaire() {
                 </div>
               ) : (
                 <label
-                  htmlFor="file-upload"
+                  htmlFor="image"
                   className="flex flex-col items-center justify-center cursor-pointer"
                 >
                   <p className="relative mb-3 text-white flex items-center gap-2 overflow-hidden p-3 rounded-md backdrop-blur-md hover:backdrop-blur-lg transition-all duration-300 border border-gray-500 hover:border-[#f57564] focus:outline-none focus:ring-2 focus:ring-[#f57564] focus:ring-opacity-50">
@@ -192,7 +202,7 @@ export default function Formulaire() {
               )}
               <input
                 type="file"
-                id="file-upload"
+                id="image"
                 accept="image/png, image/jpeg"
                 onChange={handlePhotoUpload}
                 className="hidden"
@@ -214,7 +224,9 @@ export default function Formulaire() {
           </div>
 
           <div>
-            <label className="block text-left text-sm mb-2">Full Name</label>
+            <label htmlFor="fullname" className="block text-left text-sm mb-2">
+              Full Name
+            </label>
             <input
               type="text"
               value={fullName}
@@ -235,7 +247,7 @@ export default function Formulaire() {
           </div>
 
           <div>
-            <label className="block text-left text-sm mb-2">
+            <label htmlFor="email" className="block text-left text-sm mb-2">
               Email Address
             </label>
             <input
@@ -256,7 +268,7 @@ export default function Formulaire() {
           </div>
 
           <div>
-            <label className="block text-left text-sm mb-2">
+            <label htmlFor="github" className="block text-left text-sm mb-2">
               GitHub Username
             </label>
             <input
