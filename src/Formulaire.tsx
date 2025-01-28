@@ -3,12 +3,10 @@ import { CloudUpload, Info } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useUserContext } from "./hook/useContext";
 import { useDataFetch } from "./hook/useDataFetch";
-import postTicket from "./api/axiosInstance";
 
 export default function Formulaire() {
   const { setUserData } = useUserContext();
   const navigate = useNavigate();
-
   const [photo, setPhoto] = useState<File | null>(null);
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
@@ -21,7 +19,9 @@ export default function Formulaire() {
     photo: "",
   });
   const { data } = useDataFetch();
-  console.log(data);
+  useEffect(() => {
+    console.log(data);
+  }, [data]);
 
   const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     console.log(photoError);

@@ -9,7 +9,10 @@ import axios from "axios";
 
 const postTicket = (data: any) => {
   return axios
-    .post(" http://localhost:3000/submit", data)
+    .post(
+      "https://zy6dymjd9a.execute-api.eu-west-1.amazonaws.com/submit/",
+      data
+    )
     .then((response) => {
       console.log("Réponse:", response);
       return response;
