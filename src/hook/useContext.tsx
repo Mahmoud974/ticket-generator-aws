@@ -4,7 +4,7 @@ interface UserData {
   fullName: string;
   email: string;
   github: string;
-  photo: File | null;
+  avatarUrl: File | null;
 }
 
 const UserContext = createContext<{
@@ -15,7 +15,7 @@ const UserContext = createContext<{
     fullName: "",
     email: "",
     github: "",
-    photo: null,
+    avatarUrl: null,
   },
   setUserData: () => {},
 });
@@ -26,7 +26,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     fullName: "",
     email: "",
     github: "",
-    photo: null,
+    avatarUrl: null,
   });
 
   return (

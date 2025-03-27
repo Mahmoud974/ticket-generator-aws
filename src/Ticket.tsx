@@ -2,10 +2,12 @@ import { Github } from "lucide-react";
 import { useUserContext } from "./hook/useContext";
 import { useEffect } from "react";
 import postTicket from "./api/axiosInstance";
-
+//https://rznmm0jo8f.execute-api.eu-west-3.amazonaws.com/dev/resource
 export default function Ticket() {
   const { userData } = useUserContext();
-  const photoURL = userData.photo ? URL.createObjectURL(userData.photo) : null;
+  const photoURL = userData.avatarUrl
+    ? URL.createObjectURL(userData.avatarUrl)
+    : null;
   console.log(userData);
   useEffect(() => {
     postTicket(userData);

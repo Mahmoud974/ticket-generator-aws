@@ -1,27 +1,22 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { CloudUpload, Info } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useUserContext } from "./hook/useContext";
-import { useDataFetch } from "./hook/useDataFetch";
 
 export default function Formulaire() {
   const { setUserData } = useUserContext();
-  const navigate = useNavigate();
-  const [photo, setPhoto] = useState<File | null>(null);
+  const [avatarUrl, setPhoto] = useState<File | null>(null);
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [github, setGithub] = useState("");
   const [photoError, setPhotoError] = useState<string>("");
+  const navigate = useNavigate();
   const [formErrors, setFormErrors] = useState({
     fullName: "",
     email: "",
     github: "",
-    photo: "",
+    avatarUrl: "",
   });
-  const { data } = useDataFetch();
-  useEffect(() => {
-    console.log(data);
-  }, [data]);
 
   const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     console.log(photoError);
@@ -30,10 +25,11 @@ export default function Formulaire() {
       if (!["image/jpeg", "image/png"].includes(file.type)) {
         setPhotoError("Invalid file type. Please upload a JPG or PNG file.");
       } else {
-        // Redimensionner et compresser l'image
         const resizedFile = await compressImage(file);
-        if (resizedFile.size > 500000) {
-          setPhotoError("File size is too large after compression.");
+        if (resizedFile.size > 100000) {
+          setPhotoError(
+            "File size is too large after compression. Please upload a smaller file."
+          );
         } else {
           setPhotoError("");
           setPhoto(resizedFile);
@@ -42,7 +38,6 @@ export default function Formulaire() {
     }
   };
 
-  // Fonction pour compresser l'image
   const compressImage = (file: File): Promise<File> => {
     return new Promise((resolve) => {
       const reader = new FileReader();
@@ -72,7 +67,7 @@ export default function Formulaire() {
             },
             file.type,
             0.7
-          ); // Qualité 70%
+          );
         };
       };
     });
@@ -88,12 +83,12 @@ export default function Formulaire() {
       fullName: string;
       email: string;
       github: string;
-      photo: string;
+      avatarUrl: string;
     } = {
       fullName: "",
       email: "",
       github: "",
-      photo: "",
+      avatarUrl: "",
     };
 
     if (!fullName) errors.fullName = "Please enter a valid full name.";
@@ -113,7 +108,7 @@ export default function Formulaire() {
         "GitHub username must start with '@' and contain no spaces.";
     }
 
-    if (!photo) errors.photo = "Please upload an avatar.";
+    if (!avatarUrl) errors.avatarUrl = "Please upload an avatar.";
 
     setFormErrors(errors);
     return Object.values(errors).every((error) => error === "");
@@ -122,9 +117,9 @@ export default function Formulaire() {
   const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (validateForm()) {
-      setUserData({ fullName, email, github, photo });
+      setUserData({ fullName, email, github, avatarUrl });
       navigate("/ticket");
-      console.log({ fullName, email, github, photo });
+      console.log({ fullName, email, github, avatarUrl });
     }
   };
 
@@ -158,13 +153,13 @@ export default function Formulaire() {
             </label>
             <div
               className={`${
-                formErrors.photo ? "border-red-500" : "border-gray-300"
+                formErrors.avatarUrl ? "border-red-500" : "border-gray-300"
               } flex flex-col border-2 border-dashed p-4 rounded-md`}
             >
-              {photo ? (
+              {avatarUrl ? (
                 <div className="relative flex flex-col">
                   <img
-                    src={URL.createObjectURL(photo)}
+                    src={URL.createObjectURL(avatarUrl)}
                     alt="Uploaded Avatar"
                     className="mb-3 w-16 h-16 mx-auto object-cover rounded-md"
                   />
@@ -193,7 +188,7 @@ export default function Formulaire() {
                   </p>
                   <p
                     className={`ml-1 text-md ${
-                      formErrors.photo && "text-red-500"
+                      formErrors.avatarUrl && "text-red-500"
                     }`}
                   >
                     Drag and drop or click to upload
@@ -208,16 +203,18 @@ export default function Formulaire() {
                 className="hidden"
               />
             </div>
-            {formErrors.photo ? (
+            {formErrors.avatarUrl ? (
               <div className="flex items-center mt-1">
                 <Info className="w-4 text-red-500" />
-                <p className="ml-1 text-xs text-red-500">{formErrors.photo}</p>
+                <p className="ml-1 text-xs text-red-500">
+                  {formErrors.avatarUrl}
+                </p>
               </div>
             ) : (
               <div className="flex items-center mt-1">
                 <Info className="w-4  " />
                 <p className="ml-1 text-xs  ">
-                  Upload your photo (JPG or PNG, max size: 500KB).{" "}
+                  Upload your avatarUrl (JPG or PNG, max size: 500KB).{" "}
                 </p>
               </div>
             )}

@@ -1,16 +1,9 @@
 import axios from "axios";
 
-// axios.get("http://localhost:3000/").then(function (response) {
-//   console.log(response);
-// });
-// const axiosInstance = axios.create({
-//   baseURL: "https://x3vds4f7fi.execute-api.eu-west-1.amazonaws.com/dev/",
-// });
-
 const postTicket = (data: any) => {
   return axios
     .post(
-      "https://zy6dymjd9a.execute-api.eu-west-1.amazonaws.com/submit/",
+      "https://rznmm0jo8f.execute-api.eu-west-3.amazonaws.com/dev/resource",
       data
     )
     .then((response) => {
@@ -24,4 +17,3 @@ const postTicket = (data: any) => {
 };
 
 export default postTicket;
-//"https://x3vds4f7fi.execute-api.eu-west-1.amazonaws.com/dev/submit"
