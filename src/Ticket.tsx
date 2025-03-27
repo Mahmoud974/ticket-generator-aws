@@ -17,7 +17,7 @@ export default function Ticket() {
     <main className="flex flex-col text-white justify-center items-center h-screen text-sm text-center p-4">
       <a href="/">
         <img
-          src="/images/logo-full.svg"
+          src="/images/logo-full.webp"
           alt="logo coding conf"
           className="mb-6 text-3xl font-bold"
         />
@@ -40,13 +40,13 @@ export default function Ticket() {
       <div className="flex items-center mt-8">
         <div className="relative w-96">
           <img
-            src="/images/pattern-ticket.svg"
+            src="/images/pattern-ticket.webp"
             alt="ticket user"
             className="w-full"
           />
           <div className="absolute mt-2 top-2/4 left-1/4 ml-10 transform -translate-x-1/2 -translate-y-1/2 text-center">
             <img
-              src="/images/logo-full.svg"
+              src="/images/logo-full.webp"
               alt="logo coding conf"
               className="text-3xl font-bold"
             />
@@ -62,7 +62,7 @@ export default function Ticket() {
                 />
               ) : (
                 <img
-                  src="/images/image-avatar.jpg"
+                  src="/images/image-avatar.web"
                   alt="Uploaded Avatar"
                   className="w-16 h-16 object-cover rounded-md"
                 />

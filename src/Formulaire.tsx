@@ -127,7 +127,7 @@ export default function Formulaire() {
     <main className="flex flex-col text-white justify-center items-center h-screen text-sm text-center p-4">
       <div>
         <img
-          src="/images/logo-full.svg"
+          src="/images/logo-full.webp"
           alt="logo coding conf"
           className="mb-6 text-3xl font-bold"
         />
