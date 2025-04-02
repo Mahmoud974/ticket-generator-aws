@@ -5,7 +5,8 @@
 @tailwind utilities;
 
 body {
-  font-family: "Inconsolata", serif;
+  font-family: "Inconsolata";
+  font-display: swap;
   color: #000000;
   background-image: url("/images/background-desktop.webp");
   background-size: cover;
