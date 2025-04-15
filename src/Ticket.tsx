@@ -1,16 +1,34 @@
-import { Github } from "lucide-react";
-import { useUserContext } from "./hook/useContext";
 import { useEffect } from "react";
+import { useUserContext } from "./hook/useContext";
 import postTicket from "./api/axiosInstance";
+import { Github } from "lucide-react";
 
 export default function Ticket() {
   const { userData } = useUserContext();
   const photoURL = userData.avatarUrl
     ? URL.createObjectURL(userData.avatarUrl)
     : null;
-  console.log(userData);
+
+  // Fonction pour télécharger le ticket automatiquement
+  const downloadTicket = () => {
+    const ticketData = `
+      Ticket for: ${userData.fullName}
+      Email: ${userData.email}
+      GitHub: ${userData.github}
+      Event: Coding Conf 2025, Austin, TX
+    `;
+
+    // Crée un Blob à partir des données
+    const blob = new Blob([ticketData], { type: "text/plain" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = `${userData.fullName}_Ticket.txt`; // Nom du fichier
+    link.click(); // Déclenche le téléchargement
+  };
+
   useEffect(() => {
     postTicket(userData);
+    downloadTicket(); // Télécharge le ticket dès que le formulaire est soumis
   }, [userData]);
 
   return (
@@ -50,7 +68,7 @@ export default function Ticket() {
               alt="logo coding conf"
               className="text-3xl font-bold"
             />
-            <p className=" ml-8 mt-2 text-slate-400">
+            <p className="ml-8 mt-2 text-slate-400">
               Jan 31, 2025 / Austin, TX
             </p>
             <div className="flex items-start my-5">
@@ -74,8 +92,7 @@ export default function Ticket() {
                 </h2>
                 <div className="flex items-center">
                   <Github className="w-5" />
-
-                  <p className="text-base ml-1 text-slate-400   truncate">
+                  <p className="text-base ml-1 text-slate-400 truncate">
                     {userData.github}
                   </p>
                 </div>
