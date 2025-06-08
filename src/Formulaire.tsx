@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { CloudUpload, Info } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useUserContext } from "./hook/useContext";
+import postTicket from "./api/api_aws";
 
 export default function Formulaire() {
   const { setUserData } = useUserContext();
@@ -83,7 +84,7 @@ export default function Formulaire() {
       fullName: string;
       email: string;
       github: string;
-      avatarUrl: string;
+      avatarUrl: any;
     } = {
       fullName: "",
       email: "",
@@ -118,37 +119,38 @@ export default function Formulaire() {
     e.preventDefault();
     if (validateForm()) {
       setUserData({ fullName, email, github, avatarUrl });
+      postTicket({ fullName, email, github, avatarUrl: avatarUrl?.name });
       navigate("/ticket");
       console.log({ fullName, email, github, avatarUrl });
     }
   };
 
   return (
-    <main className="flex flex-col text-white justify-center items-center h-screen text-sm text-center p-4">
+    <main className="flex flex-col justify-center items-center p-4 h-screen text-sm text-center text-white">
       <div>
         <img
           src="/images/logo-full.webp"
           alt="logo coding conf"
-          className="mb-6 text-3xl font-bold"
+          className="mb-6"
+          loading="eager"
         />
       </div>
-      <h1 className="text-4xl font-bold">
+      <h1 className="text-3xl font-bold">
         Your Journey to Coding Conf
         <br /> 2025 Starts Here!
       </h1>
-      <div className="max-w-md w-full">
+      <div className="w-full max-w-md">
         <p className="my-5">
           Secure your spot at next year's biggest coding conference.
         </p>
         <form
-          action="/submit"
           method="POST"
           encType="multipart/form-data"
           onSubmit={handleFormSubmit}
           className="space-y-4"
         >
           <div>
-            <label className="block text-left text-sm mb-2" htmlFor="image">
+            <label className="block mb-2 text-sm text-left" htmlFor="image">
               Upload Avatar
             </label>
             <div
@@ -157,22 +159,22 @@ export default function Formulaire() {
               } flex flex-col border-2 border-dashed p-4 rounded-md`}
             >
               {avatarUrl ? (
-                <div className="relative flex flex-col">
+                <div className="flex relative flex-col">
                   <img
                     src={URL.createObjectURL(avatarUrl)}
                     alt="Uploaded Avatar"
-                    className="mb-3 w-16 h-16 mx-auto object-cover rounded-md"
+                    className="object-cover mx-auto mb-3 w-16 h-16 rounded-md"
                   />
                   <div className="flex gap-2 mx-auto">
                     <p
                       onClick={removePhoto}
-                      className="cursor-pointer  px-2 py-1 opacity-35   bg-slate-600 text-white rounded-sm  hover:underline hover:opacity-100 transition-opacity duration-300"
+                      className="px-2 py-1 text-white rounded-sm transition-opacity duration-300 cursor-pointer opacity-35 bg-slate-600 hover:underline hover:opacity-100"
                     >
                       Remove image
                     </p>
                     <p
                       onClick={removePhoto}
-                      className="cursor-pointer px-2 py-1 opacity-35 hover:underline  bg-slate-600   rounded-sm   hover:opacity-100 transition-opacity duration-300"
+                      className="px-2 py-1 rounded-sm transition-opacity duration-300 cursor-pointer opacity-35 hover:underline bg-slate-600 hover:opacity-100"
                     >
                       Change image
                     </p>
@@ -181,7 +183,7 @@ export default function Formulaire() {
               ) : (
                 <label
                   htmlFor="image"
-                  className="flex flex-col items-center justify-center cursor-pointer"
+                  className="flex flex-col justify-center items-center cursor-pointer"
                 >
                   <p className="relative mb-3 text-white flex items-center gap-2 overflow-hidden p-3 rounded-md backdrop-blur-md hover:backdrop-blur-lg transition-all duration-300 border border-gray-500 hover:border-[#f57564] focus:outline-none focus:ring-2 focus:ring-[#f57564] focus:ring-opacity-50">
                     <CloudUpload className="text-xl text-[#f57564]" />
@@ -212,8 +214,8 @@ export default function Formulaire() {
               </div>
             ) : (
               <div className="flex items-center mt-1">
-                <Info className="w-4  " />
-                <p className="ml-1 text-xs  ">
+                <Info className="w-4" />
+                <p className="ml-1 text-xs">
                   Upload your avatarUrl (JPG or PNG, max size: 500KB).{" "}
                 </p>
               </div>
@@ -221,7 +223,7 @@ export default function Formulaire() {
           </div>
 
           <div>
-            <label htmlFor="fullname" className="block text-left text-sm mb-2">
+            <label htmlFor="fullname" className="block mb-2 text-sm text-left">
               Full Name
             </label>
             <input
@@ -244,7 +246,7 @@ export default function Formulaire() {
           </div>
 
           <div>
-            <label htmlFor="email" className="block text-left text-sm mb-2">
+            <label htmlFor="email" className="block mb-2 text-sm text-left">
               Email Address
             </label>
             <input
@@ -265,7 +267,7 @@ export default function Formulaire() {
           </div>
 
           <div>
-            <label htmlFor="github" className="block text-left text-sm mb-2">
+            <label htmlFor="github" className="block mb-2 text-sm text-left">
               GitHub Username
             </label>
             <input

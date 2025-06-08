@@ -1,6 +1,5 @@
 import { useEffect } from "react";
 import { useUserContext } from "./hook/useContext";
-import postTicket from "./api/axiosInstance";
 import { Github } from "lucide-react";
 
 export default function Ticket() {
@@ -9,8 +8,7 @@ export default function Ticket() {
     ? URL.createObjectURL(userData.avatarUrl)
     : null;
 
-  // Fonction pour télécharger le ticket automatiquement
-  const downloadTicket = () => {
+  const downloadTicket = (): void => {
     const ticketData = `
       Ticket for: ${userData.fullName}
       Email: ${userData.email}
@@ -18,21 +16,19 @@ export default function Ticket() {
       Event: Coding Conf 2025, Austin, TX
     `;
 
-    // Crée un Blob à partir des données
     const blob = new Blob([ticketData], { type: "text/plain" });
     const link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
-    link.download = `${userData.fullName}_Ticket.txt`; // Nom du fichier
-    link.click(); // Déclenche le téléchargement
+    link.download = `${userData.fullName}_Ticket.txt`;
+    link.click();
   };
 
   useEffect(() => {
-    postTicket(userData);
-    downloadTicket(); // Télécharge le ticket dès que le formulaire est soumis
+    downloadTicket();
   }, [userData]);
 
   return (
-    <main className="flex flex-col text-white justify-center items-center h-screen text-sm text-center p-4">
+    <main className="flex flex-col justify-center items-center p-4 h-screen text-sm text-center text-white">
       <a href="/">
         <img
           src="/images/logo-full.webp"
@@ -42,7 +38,7 @@ export default function Ticket() {
       </a>
       <h1 className="text-4xl font-bold">
         Congrats,
-        <span className="bg-gradient-to-r from-red-500 to-white bg-clip-text text-transparent">
+        <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-white">
           {userData.fullName}
         </span>
         !
@@ -62,13 +58,13 @@ export default function Ticket() {
             alt="ticket user"
             className="w-full"
           />
-          <div className="absolute mt-2 top-2/4 left-1/4 ml-10 transform -translate-x-1/2 -translate-y-1/2 text-center">
+          <div className="absolute top-2/4 left-1/4 mt-2 ml-10 text-center transform -translate-x-1/2 -translate-y-1/2">
             <img
               src="/images/logo-full.webp"
               alt="logo coding conf"
               className="text-3xl font-bold"
             />
-            <p className="ml-8 mt-2 text-slate-400">
+            <p className="mt-2 ml-8 text-slate-400">
               Jan 31, 2025 / Austin, TX
             </p>
             <div className="flex items-start my-5">
@@ -76,23 +72,23 @@ export default function Ticket() {
                 <img
                   src={photoURL}
                   alt="User Avatar"
-                  className="w-16 h-16 object-cover rounded-md"
+                  className="object-cover w-16 h-16 rounded-md"
                 />
               ) : (
                 <img
                   src="/images/image-avatar.web"
                   alt="Uploaded Avatar"
-                  className="w-16 h-16 object-cover rounded-md"
+                  className="object-cover w-16 h-16 rounded-md"
                 />
               )}
 
               <div className="flex flex-col ml-2">
-                <h2 className="text-xl text-left w-40 truncate">
+                <h2 className="w-40 text-xl text-left truncate">
                   {userData.fullName}
                 </h2>
                 <div className="flex items-center">
                   <Github className="w-5" />
-                  <p className="text-base ml-1 text-slate-400 truncate">
+                  <p className="ml-1 text-base truncate text-slate-400">
                     {userData.github}
                   </p>
                 </div>

@@ -4,7 +4,7 @@ interface UserData {
   fullName: string;
   email: string;
   github: string;
-  avatarUrl: File | null;
+  avatarUrl: any;
 }
 
 const UserContext = createContext<{
@@ -15,7 +15,7 @@ const UserContext = createContext<{
     fullName: "",
     email: "",
     github: "",
-    avatarUrl: null,
+    avatarUrl: "",
   },
   setUserData: () => {},
 });
@@ -26,7 +26,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     fullName: "",
     email: "",
     github: "",
-    avatarUrl: null,
+    avatarUrl: "",
   });
 
   return (
@@ -36,5 +36,4 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   );
 };
 
-// Hook personnalisé pour utiliser le contexte
 export const useUserContext = () => useContext(UserContext);
