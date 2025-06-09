@@ -24,8 +24,10 @@ export default function Ticket() {
         const canvas = await html2canvas(ticketRef.current);
         const dataUrl = canvas.toDataURL("image/png");
 
+        // Envoie du ticket par e-mail
         await sendTicketByEmail(dataUrl);
 
+        // Téléchargement local du ticket
         const link = document.createElement("a");
         link.href = dataUrl;
         link.download = `${userData.fullName}_ticket.png`;
@@ -35,7 +37,9 @@ export default function Ticket() {
       }
     };
 
-    captureAndSend();
+    if (userData?.email) {
+      captureAndSend();
+    }
   }, [userData]);
 
   const sendTicketByEmail = async (imageDataUrl: string) => {
@@ -46,31 +50,20 @@ export default function Ticket() {
         body: JSON.stringify({
           fullName: userData.fullName,
           email: userData.email,
+          github: userData.github,
           ticketImage: imageDataUrl,
         }),
       });
 
       if (!response.ok) {
-        throw new Error("Erreur lors de l'envoi de l'email");
+        throw new Error("Erreur lors de l'envoi de l'e-mail");
       }
 
-      console.log("Ticket envoyé par e-mail !");
+      console.log("✅ Ticket envoyé par e-mail !");
     } catch (error) {
-      console.error("Erreur lors de l'envoi :", error);
+      console.error("❌ Erreur lors de l'envoi :", error);
     }
   };
-
-  useEffect(() => {
-    const captureAndSend = async () => {
-      if (ticketRef.current) {
-        const canvas = await html2canvas(ticketRef.current);
-        const dataUrl = canvas.toDataURL("image/png");
-        await sendTicketByEmail(dataUrl);
-      }
-    };
-
-    captureAndSend();
-  }, [userData]);
 
   return (
     <main className="flex flex-col justify-center items-center p-4 h-screen text-sm text-center text-white">
