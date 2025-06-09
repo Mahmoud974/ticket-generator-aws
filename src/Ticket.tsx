@@ -8,7 +8,6 @@ export default function Ticket() {
   const ticketRef = useRef<HTMLDivElement>(null);
   const [photoURL, setPhotoURL] = useState<string | null>(null);
 
-  // Gérer l'URL de l'avatar
   useEffect(() => {
     if (userData.avatarUrl instanceof File) {
       const url = URL.createObjectURL(userData.avatarUrl);
@@ -25,14 +24,12 @@ export default function Ticket() {
         const canvas = await html2canvas(ticketRef.current);
         const dataUrl = canvas.toDataURL("image/png");
 
-        // ✅ Envoi par e-mail
         await sendTicketByEmail(dataUrl);
 
-        // ✅ Téléchargement local
         const link = document.createElement("a");
         link.href = dataUrl;
         link.download = `${userData.fullName}_ticket.png`;
-        document.body.appendChild(link); // nécessaire sur Safari
+        document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
       }
@@ -41,7 +38,6 @@ export default function Ticket() {
     captureAndSend();
   }, [userData]);
 
-  // Envoie l'image du ticket au backend
   const sendTicketByEmail = async (imageDataUrl: string) => {
     try {
       const response = await fetch(import.meta.env.VITE_API_SEND_EMAIL, {
@@ -64,7 +60,6 @@ export default function Ticket() {
     }
   };
 
-  // Capture l'élément et déclenche l'envoi
   useEffect(() => {
     const captureAndSend = async () => {
       if (ticketRef.current) {
