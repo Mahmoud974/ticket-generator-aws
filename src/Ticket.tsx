@@ -24,10 +24,8 @@ export default function Ticket() {
         const canvas = await html2canvas(ticketRef.current);
         const dataUrl = canvas.toDataURL("image/png");
 
-        // Envoie du ticket par e-mail
         await sendTicketByEmail(dataUrl);
 
-        // Téléchargement local du ticket
         const link = document.createElement("a");
         link.href = dataUrl;
         link.download = `${userData.fullName}_ticket.png`;
@@ -109,7 +107,7 @@ export default function Ticket() {
             </p>
             <div className="flex items-start my-5">
               <img
-                src={photoURL || "/images/image-avatar.web"}
+                src={photoURL || "/images/image-avatar.jpg"}
                 alt="User Avatar"
                 className="object-cover w-16 h-16 rounded-md"
               />

@@ -1,8 +1,9 @@
-import React, { useState } from "react";
-import { CloudUpload, Info } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { CloudUpload, Info, CheckCircle, XCircle, Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useUserContext } from "./hook/useContext";
 import postTicket from "./api/api_aws";
+import ImgStore from "./ImgStore";
 
 export default function Formulaire() {
   const { setUserData } = useUserContext();
@@ -11,7 +12,11 @@ export default function Formulaire() {
   const [email, setEmail] = useState("");
   const [github, setGithub] = useState("");
   const [photoError, setPhotoError] = useState<string>("");
+  const [githubStatus, setGithubStatus] = useState<
+    "loading" | "valid" | "invalid" | ""
+  >("");
   const navigate = useNavigate();
+
   const [formErrors, setFormErrors] = useState({
     fullName: "",
     email: "",
@@ -19,8 +24,33 @@ export default function Formulaire() {
     avatarUrl: "",
   });
 
+  useEffect(() => {
+    const checkGithubUser = async () => {
+      if (!github || !/^@[a-zA-Z0-9_-]+$/.test(github)) {
+        setGithubStatus("");
+        return;
+      }
+
+      setGithubStatus("loading");
+
+      try {
+        const username = github.replace("@", "");
+        const res = await fetch(`https://api.github.com/users/${username}`);
+        if (res.ok) {
+          setGithubStatus("valid");
+        } else {
+          setGithubStatus("invalid");
+        }
+      } catch {
+        setGithubStatus("invalid");
+      }
+    };
+
+    const delay = setTimeout(checkGithubUser, 600);
+    return () => clearTimeout(delay);
+  }, [github]);
+
   const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    console.log(photoError);
     const file = e.target.files?.[0];
     if (file) {
       if (!["image/jpeg", "image/png"].includes(file.type)) {
@@ -53,9 +83,7 @@ export default function Formulaire() {
           const scaleSize = maxWidth / img.width;
           canvas.width = maxWidth;
           canvas.height = img.height * scaleSize;
-
           ctx?.drawImage(img, 0, 0, canvas.width, canvas.height);
-
           canvas.toBlob(
             (blob) => {
               if (blob) {
@@ -80,12 +108,7 @@ export default function Formulaire() {
   };
 
   const validateForm = () => {
-    const errors: {
-      fullName: string;
-      email: string;
-      github: string;
-      avatarUrl: any;
-    } = {
+    const errors = {
       fullName: "",
       email: "",
       github: "",
@@ -107,6 +130,8 @@ export default function Formulaire() {
     } else if (!githubRegex.test(github)) {
       errors.github =
         "GitHub username must start with '@' and contain no spaces.";
+    } else if (githubStatus === "invalid") {
+      errors.github = "GitHub account doesn't exist.";
     }
 
     if (!avatarUrl) errors.avatarUrl = "Please upload an avatar.";
@@ -121,12 +146,12 @@ export default function Formulaire() {
       setUserData({ fullName, email, github, avatarUrl });
       postTicket({ fullName, email, github, avatarUrl: avatarUrl?.name });
       navigate("/ticket");
-      console.log({ fullName, email, github, avatarUrl });
     }
   };
 
   return (
     <main className="flex flex-col justify-center items-center p-4 h-screen text-sm text-center text-white">
+      <ImgStore />
       <div>
         <img
           src="/images/logo-full.webp"
@@ -137,7 +162,8 @@ export default function Formulaire() {
       </div>
       <h1 className="text-3xl font-bold">
         Your Journey to Coding Conf
-        <br /> 2025 Starts Here!
+        <br />
+        2025 Starts Here!
       </h1>
       <div className="w-full max-w-md">
         <p className="my-5">
@@ -149,6 +175,7 @@ export default function Formulaire() {
           onSubmit={handleFormSubmit}
           className="space-y-4"
         >
+          {/* Avatar Upload */}
           <div>
             <label className="block mb-2 text-sm text-left" htmlFor="image">
               Upload Avatar
@@ -216,12 +243,13 @@ export default function Formulaire() {
               <div className="flex items-center mt-1">
                 <Info className="w-4" />
                 <p className="ml-1 text-xs">
-                  Upload your avatarUrl (JPG or PNG, max size: 500KB).{" "}
+                  Upload your avatar (JPG or PNG, max size: 500KB).
                 </p>
               </div>
             )}
           </div>
 
+          {/* Full Name */}
           <div>
             <label htmlFor="fullname" className="block mb-2 text-sm text-left">
               Full Name
@@ -245,6 +273,7 @@ export default function Formulaire() {
             )}
           </div>
 
+          {/* Email */}
           <div>
             <label htmlFor="email" className="block mb-2 text-sm text-left">
               Email Address
@@ -266,19 +295,33 @@ export default function Formulaire() {
             )}
           </div>
 
+          {/* GitHub Username */}
           <div>
             <label htmlFor="github" className="block mb-2 text-sm text-left">
               GitHub Username
             </label>
-            <input
-              type="text"
-              value={github}
-              onChange={(e) => setGithub(e.target.value)}
-              className={`${
-                formErrors.github ? "border-red-500" : "border-gray-300"
-              } w-full px-3 py-2 text-sm border rounded-md backdrop-blur-md bg-transparent text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#f57564]`}
-              placeholder="@yourusername"
-            />
+            <div className="relative">
+              <input
+                type="text"
+                value={github}
+                onChange={(e) => setGithub(e.target.value)}
+                className={`${
+                  formErrors.github ? "border-red-500" : "border-gray-300"
+                } w-full px-3 py-2 pr-10 text-sm border rounded-md backdrop-blur-md bg-transparent text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#f57564]`}
+                placeholder="@yourusername"
+              />
+              <div className="absolute top-2.5 right-2">
+                {githubStatus === "loading" && (
+                  <Loader2 className="w-4 h-4 text-yellow-400 animate-spin" />
+                )}
+                {githubStatus === "valid" && (
+                  <CheckCircle className="w-4 h-4 text-green-400" />
+                )}
+                {githubStatus === "invalid" && (
+                  <XCircle className="w-4 h-4 text-red-400" />
+                )}
+              </div>
+            </div>
             {formErrors.github && (
               <div className="flex items-center mt-1">
                 <Info className="w-4 text-red-500" />
@@ -287,6 +330,7 @@ export default function Formulaire() {
             )}
           </div>
 
+          {/* Submit Button */}
           <button
             type="submit"
             className="w-full py-2 text-sm bg-[#f57564] text-black font-bold rounded-md"
