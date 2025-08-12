@@ -1,9 +1,14 @@
 import React, { useState, useEffect } from "react";
-import { CloudUpload, Info, CheckCircle, XCircle, Loader2 } from "lucide-react";
+import {
+  CloudUpload,
+  Info,
+  CheckCircle,
+  XCircle,
+  Loader2,
+} from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useUserContext } from "./hook/useContext";
 import postTicket from "./api/api_aws";
-import ImgStore from "./ImgStore";
 
 export default function Formulaire() {
   const { setUserData } = useUserContext();
@@ -36,11 +41,7 @@ export default function Formulaire() {
       try {
         const username = github.replace("@", "");
         const res = await fetch(`https://api.github.com/users/${username}`);
-        if (res.ok) {
-          setGithubStatus("valid");
-        } else {
-          setGithubStatus("invalid");
-        }
+        setGithubStatus(res.ok ? "valid" : "invalid");
       } catch {
         setGithubStatus("invalid");
       }
@@ -54,13 +55,13 @@ export default function Formulaire() {
     const file = e.target.files?.[0];
     if (file) {
       if (!["image/jpeg", "image/png"].includes(file.type)) {
-        setPhotoError("Invalid file type. Please upload a JPG or PNG file.");
+        setPhotoError("Type de fichier invalide. JPG ou PNG uniquement.");
+        setPhoto(null);
       } else {
         const resizedFile = await compressImage(file);
-        if (resizedFile.size > 100000) {
-          setPhotoError(
-            "File size is too large after compression. Please upload a smaller file."
-          );
+        if (resizedFile.size > 500 * 1024) {
+          setPhotoError("L'image est trop lourde après compression (max 500 Ko).");
+          setPhoto(null);
         } else {
           setPhotoError("");
           setPhoto(resizedFile);
@@ -115,7 +116,11 @@ export default function Formulaire() {
       avatarUrl: "",
     };
 
-    if (!fullName) errors.fullName = "Please enter a valid full name.";
+    if (!fullName) {
+      errors.fullName = "Please enter a valid full name.";
+    } else if (/\d/.test(fullName)) {
+      errors.fullName = "The name must not contain numbers.";
+    }
 
     const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     if (!email) {
@@ -151,7 +156,6 @@ export default function Formulaire() {
 
   return (
     <main className="flex flex-col justify-center items-center p-4 h-screen text-sm text-center text-white">
-      <ImgStore />
       <div>
         <img
           src="/images/logo-full.webp"

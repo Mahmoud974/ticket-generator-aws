@@ -8,6 +8,7 @@ export default function Ticket() {
   const ticketRef = useRef<HTMLDivElement>(null);
   const [photoURL, setPhotoURL] = useState<string | null>(null);
 
+  // Gérer l'affichage de la photo utilisateur (File ou URL)
   useEffect(() => {
     if (userData.avatarUrl instanceof File) {
       const url = URL.createObjectURL(userData.avatarUrl);
@@ -18,48 +19,50 @@ export default function Ticket() {
     }
   }, [userData.avatarUrl]);
 
+ 
   useEffect(() => {
-    const captureAndSend = async () => {
-      if (ticketRef.current) {
-        const canvas = await html2canvas(ticketRef.current);
-        const dataUrl = canvas.toDataURL("image/png");
-
-        await sendTicketByEmail(dataUrl);
-
-        const link = document.createElement("a");
-        link.href = dataUrl;
-        link.download = `${userData.fullName}_ticket.png`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-      }
+    const captureAndUpload = async () => {
+      if (!ticketRef.current) return;
+  
+      const canvas = await html2canvas(ticketRef.current);
+      const dataUrl = canvas.toDataURL("image/png");
+  
+     
+      const link = document.createElement("a");
+      link.href = dataUrl;
+      const cleanName = userData.fullName.replace(/\s+/g, "-").replace(/[^\w\-]/g, "");
+      link.download = `${cleanName}_ticket.png`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+  
+      // Envoi vers S3
+      await uploadToS3(dataUrl);
     };
-
+  
     if (userData?.email) {
-      captureAndSend();
+      captureAndUpload();
     }
   }, [userData]);
+  
 
-  const sendTicketByEmail = async (imageDataUrl: string) => {
+  
+  const uploadToS3 = async (imageDataUrl: string) => {
     try {
-      const response = await fetch(import.meta.env.VITE_API_SEND_EMAIL, {
+      const filename = `${userData.fullName.replace(/\s+/g, "-")}_ticket.png`;
+
+      await fetch(import.meta.env.VITE_API_UPLOAD_S3, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          fullName: userData.fullName,
-          email: userData.email,
-          github: userData.github,
-          ticketImage: imageDataUrl,
+          imageDataUrl,
+          filename,
         }),
       });
 
-      if (!response.ok) {
-        throw new Error("Erreur lors de l'envoi de l'e-mail");
-      }
-
-      console.log("✅ Ticket envoyé par e-mail !");
+      console.log("✅ Ticket uploadé dans S3 !");
     } catch (error) {
-      console.error("❌ Erreur lors de l'envoi :", error);
+      console.error("❌ Erreur lors de l’upload S3 :", error);
     }
   };
 
@@ -83,9 +86,8 @@ export default function Ticket() {
       </h1>
 
       <p className="mt-5">
-        We've emailed your ticket to <br />
-        {userData.email} and will send updates <br />
-        in the run-up to the event.
+        We have uploaded your ticket to our server. <br />
+        We'll keep you posted with updates!
       </p>
 
       {/* 🎟️ Ticket à capturer */}
