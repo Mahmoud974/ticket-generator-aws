@@ -5,6 +5,7 @@ interface UserData {
   email: string;
   github: string;
   avatarUrl: any;
+  reqId?: string;
 }
 
 const UserContext = createContext<{
@@ -16,6 +17,7 @@ const UserContext = createContext<{
     email: "",
     github: "",
     avatarUrl: "",
+    reqId: "",
   },
   setUserData: () => {},
 });
@@ -27,6 +29,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     email: "",
     github: "",
     avatarUrl: "",
+    reqId: "",
   });
 
   return (
