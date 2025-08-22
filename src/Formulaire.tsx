@@ -423,7 +423,12 @@ export default function Formulaire() {
                 type="text"
                 value={github}
                 onChange={(e) => {
-                  setGithub(e.target.value);
+                  const raw = e.target.value.trim();
+                  if (raw === "") {
+                    setGithub("");
+                  } else {
+                    setGithub(raw.startsWith("@") ? raw : `@${raw}`);
+                  }
                   setShowSuggestions(true);
                 }}
                 className={`${
