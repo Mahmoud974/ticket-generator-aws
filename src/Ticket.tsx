@@ -2,14 +2,22 @@ import { toPng } from "html-to-image";
 import { useRef, useEffect, useState } from "react";
 import { useUserContext } from "./hook/useContext";
 import { Github } from "lucide-react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+
 export default function Ticket() {
   const { userData } = useUserContext();
   const ticketRef = useRef<HTMLDivElement>(null);
   const [photoURL, setPhotoURL] = useState<string | null>(null);
   const location = useLocation();
+  const navigate = useNavigate(); // Ajout de useNavigate
 
- 
+  // 🔄 Redirection vers l'accueil si les données sont manquantes
+  useEffect(() => {
+    if (!userData || !userData.fullName || !userData.email) {
+      navigate("/"); // Redirige vers l'accueil
+    }
+  }, [userData, navigate]);
+
   useEffect(() => {
     let url: string | null = null;
     if (userData?.avatarUrl instanceof File) {
@@ -23,7 +31,6 @@ export default function Ticket() {
     };
   }, [userData?.avatarUrl]);
 
- 
   const ensureImagesLoaded = async () => {
     if (!ticketRef.current) return;
     const images = Array.from(ticketRef.current.querySelectorAll("img"));
@@ -46,13 +53,12 @@ export default function Ticket() {
     );
   };
 
-  
   const captureAndUpload = async () => {
-    if (!ticketRef.current) return;
+    if (!ticketRef.current || !userData) return;
 
     await ensureImagesLoaded();
     const dataUrl = await toPng(ticketRef.current);
- 
+
     const link = document.createElement("a");
     link.href = dataUrl;
     const cleanName = userData.fullName.replace(/\s+/g, "-").replace(/[^\w-]/g, "");
@@ -61,17 +67,16 @@ export default function Ticket() {
     link.click();
     document.body.removeChild(link);
 
- 
     try {
       await uploadToS3(dataUrl);
     } catch {
-  return;
+      return;
     }
   };
 
   const uploadToS3 = async (imageDataUrl: string) => {
     try {
-      if (!import.meta.env.VITE_API_UPLOAD_S3) return;
+      if (!import.meta.env.VITE_API_UPLOAD_S3 || !userData) return;
       const filename = `${userData.fullName.replace(/\s+/g, "-")}_ticket.png`;
       await fetch(import.meta.env.VITE_API_UPLOAD_S3, {
         method: "POST",
@@ -80,19 +85,17 @@ export default function Ticket() {
       });
       console.log("✅ Ticket uploadé dans S3 !");
     } catch (error) {
-      console.error("❌ Erreur lors de l’upload S3 :", error);
+      console.error("❌ Erreur lors de l'upload S3 :", error);
       throw error;
     }
   };
 
- 
   useEffect(() => {
     if (userData?.email && userData?.reqId) {
       captureAndUpload();
     }
   }, [userData?.reqId, userData?.email]);
 
- 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const ts = params.get("ts");
@@ -103,10 +106,19 @@ export default function Ticket() {
 
   useEffect(() => {
     if (userData?.email && !userData?.reqId) {
- 
       captureAndUpload();
     }
   }, []);
+
+  // Si pas de données, on affiche un loader pendant la redirection
+  if (!userData || !userData.fullName) {
+    return (
+      <div className="flex flex-col justify-center items-center p-4 h-screen text-white">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
+        <p className="mt-4">Redirection...</p>
+      </div>
+    );
+  }
 
   return (
     <main className="flex flex-col justify-center items-center p-4 h-screen text-sm text-center text-white">
@@ -127,7 +139,6 @@ export default function Ticket() {
         We have uploaded your ticket to our server. <br />
         We'll keep you posted with updates!
       </p>
-
 
       <div className="flex items-center mt-8">
         <div ref={ticketRef} className="relative w-96">
