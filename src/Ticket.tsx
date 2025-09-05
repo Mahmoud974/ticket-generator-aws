@@ -2,21 +2,22 @@ import { toPng } from "html-to-image";
 import { useRef, useEffect, useState } from "react";
 import { useUserContext } from "./hook/useContext";
 import { Github } from "lucide-react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import {   useLocation, useNavigate } from "react-router-dom";
 
 export default function Ticket() {
   const { userData } = useUserContext();
   const ticketRef = useRef<HTMLDivElement>(null);
   const [photoURL, setPhotoURL] = useState<string | null>(null);
   const location = useLocation();
-  const navigate = useNavigate(); // Ajout de useNavigate
+  const navigate = useNavigate();  
 
-  // 🔄 Redirection vers l'accueil si les données sont manquantes
   useEffect(() => {
-    if (!userData || !userData.fullName || !userData.email) {
-      navigate("/"); // Redirige vers l'accueil
+    if ( !userData || !userData.fullName || !userData.email) {
+      navigate("/");
+      
     }
-  }, [userData, navigate]);
+  }, [userData, navigate  ]);
+
 
   useEffect(() => {
     let url: string | null = null;
@@ -52,6 +53,7 @@ export default function Ticket() {
       })
     );
   };
+ 
 
   const captureAndUpload = async () => {
     if (!ticketRef.current || !userData) return;
@@ -90,6 +92,7 @@ export default function Ticket() {
     }
   };
 
+
   useEffect(() => {
     if (userData?.email && userData?.reqId) {
       captureAndUpload();
@@ -110,7 +113,7 @@ export default function Ticket() {
     }
   }, []);
 
-  // Si pas de données, on affiche un loader pendant la redirection
+  
   if (!userData || !userData.fullName) {
     return (
       <div className="flex flex-col justify-center items-center p-4 h-screen text-white">
@@ -122,9 +125,9 @@ export default function Ticket() {
 
   return (
     <main className="flex flex-col justify-center items-center p-4 h-screen text-sm text-center text-white">
-      <Link to="/">
+     <div >
         <img src="/images/logo-full.webp" alt="logo coding conf" className="mb-6 text-3xl font-bold" />
-      </Link>
+      </div>
 
       <h1 className="text-4xl font-bold">
         Congrats,{" "}
@@ -154,7 +157,7 @@ export default function Ticket() {
               />
               <div className="flex flex-col ml-2">
                 <h2 className="w-40 text-xl text-left truncate">{userData.fullName}</h2>
-                <div className="flex items-center">
+                 <div className="flex items-center">
                   <Github className="w-5" />
                   <p className="ml-1 text-base truncate text-slate-400">{userData.github}</p>
                 </div>
@@ -164,9 +167,7 @@ export default function Ticket() {
         </div>
       </div>
 
-      <button onClick={captureAndUpload} className="mt-6 px-4 py-2 bg-[#f57564] text-black font-bold rounded-md">
-        Télécharger mon ticket
-      </button>
+
     </main>
   );
 }
