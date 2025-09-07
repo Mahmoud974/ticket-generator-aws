@@ -105,7 +105,9 @@ export default function Formulaire() {
                 const d = await r.json();
                 return { ...u, name: d.name || undefined } as GithubSuggestion;
               }
-            } catch {}
+            } catch {
+              console.log("err")
+            }
             return u;
           })
         );
@@ -206,7 +208,7 @@ export default function Formulaire() {
 
   const removePhoto = () => {
     setPhoto(null);
-    if (fileInputRef.current) fileInputRef.current.value = ""; // re-sélection même fichier
+    if (fileInputRef.current) fileInputRef.current.value = ""; 
   };
 
   const validateForm = () => {
@@ -267,7 +269,7 @@ export default function Formulaire() {
     if (validateForm()) {
       const reqId = `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
       setUserData({ fullName, email, github, avatarUrl, reqId });
-      postTicket({ fullName, email, github, avatarUrl: avatarUrl?.name });
+      postTicket({ fullName, email, github, avatarUrl: avatarUrl?.name, reqId });
 
       setForceUpdate((prev) => prev + 1);
 

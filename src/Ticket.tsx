@@ -1,119 +1,169 @@
+// src/components/Ticket.tsx
 import { toPng } from "html-to-image";
 import { useRef, useEffect, useState } from "react";
 import { useUserContext } from "./hook/useContext";
 import { Github } from "lucide-react";
-import {   useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
+import postTicket from "./api/api_aws";
+
+type UploadResult = { secure_url: string; public_id: string };
+
+const SHOULD_DOWNLOAD_LOCAL = false;
 
 export default function Ticket() {
   const { userData } = useUserContext();
   const ticketRef = useRef<HTMLDivElement>(null);
+
+
   const [photoURL, setPhotoURL] = useState<string | null>(null);
+
+ 
+  const hasRunRef = useRef(false);
+
   const location = useLocation();
-  const navigate = useNavigate();  
+  const navigate = useNavigate();
 
-  useEffect(() => {
-    if ( !userData || !userData.fullName || !userData.email) {
-      navigate("/");
-      
+  const assertEnv = () => {
+    const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME as string | undefined;
+    const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET as string | undefined;
+    const apiUrl = import.meta.env.VITE_API_URL as string | undefined;
+    if (!cloudName) throw new Error("Env manquante: VITE_CLOUDINARY_CLOUD_NAME");
+    if (!uploadPreset) throw new Error("Env manquante: VITE_CLOUDINARY_UPLOAD_PRESET");
+    if (!apiUrl) throw new Error("Env manquante: VITE_API_URL");
+    return { cloudName, uploadPreset, apiUrl };
+  };
+
+  const uploadToCloudinary = async (
+    ticketDataUrl: string,
+    fileBaseName: string
+  ): Promise<UploadResult> => {
+    const { cloudName, uploadPreset } = assertEnv();
+    const form = new FormData();
+    form.append("file", ticketDataUrl);
+    form.append("upload_preset", uploadPreset);
+
+    // public_id unique (évite écrasement et facilite debug)
+    const unique = userData?.reqId ?? `${Date.now()}`;
+    form.append("public_id", `${fileBaseName}_ticket_${unique}`);
+
+    const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
+      method: "POST",
+      body: form,
+    });
+    const json = await res.json();
+    if (!res.ok) {
+      throw new Error(json?.error?.message || "Cloudinary upload failed");
     }
-  }, [userData, navigate  ]);
-
-
-  useEffect(() => {
-    let url: string | null = null;
-    if (userData?.avatarUrl instanceof File) {
-      url = URL.createObjectURL(userData.avatarUrl);
-      setPhotoURL(url);
-    } else if (typeof userData?.avatarUrl === "string") {
-      setPhotoURL(userData.avatarUrl);
-    }
-    return () => {
-      if (url) URL.revokeObjectURL(url);
-    };
-  }, [userData?.avatarUrl]);
+    return json as UploadResult;
+  };
 
   const ensureImagesLoaded = async () => {
     if (!ticketRef.current) return;
-    const images = Array.from(ticketRef.current.querySelectorAll("img"));
+    const imgs = Array.from(ticketRef.current.querySelectorAll("img"));
     await Promise.all(
-      images.map((img) => {
-        return new Promise<void>((resolve) => {
-          if (img.complete && img.naturalWidth > 0) {
-            resolve();
-          } else {
-            const onLoadOrError = () => {
-              img.removeEventListener("load", onLoadOrError);
-              img.removeEventListener("error", onLoadOrError);
+      imgs.map(
+        (img) =>
+          new Promise<void>((resolve) => {
+            if (img.complete && img.naturalWidth > 0) return resolve();
+            const done = () => {
+              img.removeEventListener("load", done);
+              img.removeEventListener("error", done);
               resolve();
             };
-            img.addEventListener("load", onLoadOrError);
-            img.addEventListener("error", onLoadOrError);
-          }
-        });
-      })
+            img.addEventListener("load", done);
+            img.addEventListener("error", done);
+          })
+      )
     );
   };
- 
 
-  const captureAndUpload = async () => {
+  const downloadLocal = (dataUrl: string, filename: string) => {
+    const a = document.createElement("a");
+    a.href = dataUrl;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  };
+ 
+  useEffect(() => {
+    if (!userData || !userData.fullName || !userData.email) navigate("/");
+  }, [userData, navigate]);
+
+  useEffect(() => {
+    // Prépare l’avatar pour l’affichage du ticket uniquement
+    let blobUrl: string | null = null;
+    if (userData?.avatarUrl instanceof File) {
+      blobUrl = URL.createObjectURL(userData.avatarUrl);
+      setPhotoURL(blobUrl);
+    } else if (typeof userData?.avatarUrl === "string") {
+      // on garde l’URL fournie par l’utilisateur (pas l’URL Cloudinary du ticket)
+      setPhotoURL(userData.avatarUrl);
+    } else {
+      setPhotoURL(null);
+    }
+    return () => {
+      if (blobUrl) URL.revokeObjectURL(blobUrl);
+    };
+  }, [userData?.avatarUrl]);
+
+ 
+  const captureUploadAndSave = async () => {
     if (!ticketRef.current || !userData) return;
 
+    // Valide les env tôt
+    assertEnv();
+
     await ensureImagesLoaded();
+
+    
     const dataUrl = await toPng(ticketRef.current);
 
-    const link = document.createElement("a");
-    link.href = dataUrl;
-    const cleanName = userData.fullName.replace(/\s+/g, "-").replace(/[^\w-]/g, "");
-    link.download = `${cleanName}_ticket.png`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    const cleanName = userData.fullName
+      .replace(/\s+/g, "-")
+      .replace(/[^\w-]/g, "");
 
-    try {
-      await uploadToS3(dataUrl);
-    } catch {
-      return;
+    
+    if (SHOULD_DOWNLOAD_LOCAL) {
+      downloadLocal(dataUrl, `${cleanName}_ticket.png`);
     }
+
+     
+    const uploaded = await uploadToCloudinary(dataUrl, cleanName);
+
+   
+    await postTicket({
+      fullName: userData.fullName,
+      email: userData.email,
+      github: userData.github,
+      avatarUrl: uploaded.secure_url,
+    });
+
+    console.log("✅ Ticket uploadé (Cloudinary) & enregistré via l’API:", uploaded.secure_url);
   };
 
-  const uploadToS3 = async (imageDataUrl: string) => {
-    try {
-      if (!import.meta.env.VITE_API_UPLOAD_S3 || !userData) return;
-      const filename = `${userData.fullName.replace(/\s+/g, "-")}_ticket.png`;
-      await fetch(import.meta.env.VITE_API_UPLOAD_S3, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ imageDataUrl, filename }),
+   
+  useEffect(() => {
+    if (!userData?.email || !userData?.fullName) return;
+
+    
+    const ts = new URLSearchParams(location.search).get("ts");
+    const shouldRun = Boolean(userData.reqId || ts || true);
+
+    if (!shouldRun) return;
+    if (hasRunRef.current) return;
+    hasRunRef.current = true;
+
+    // microtask pour contourner le double-run dev
+    queueMicrotask(() => {
+      captureUploadAndSave().catch((e) => {
+        console.error("❌ Échec capture/upload:", e);
+        alert((e as Error).message || "Une erreur est survenue pendant l’upload.");
       });
-      console.log("✅ Ticket uploadé dans S3 !");
-    } catch (error) {
-      console.error("❌ Erreur lors de l'upload S3 :", error);
-      throw error;
-    }
-  };
-
-
-  useEffect(() => {
-    if (userData?.email && userData?.reqId) {
-      captureAndUpload();
-    }
-  }, [userData?.reqId, userData?.email]);
-
-  useEffect(() => {
-    const params = new URLSearchParams(location.search);
-    const ts = params.get("ts");
-    if (ts && userData?.email) {
-      captureAndUpload();
-    }
-  }, [location.search, userData?.email]);
-
-  useEffect(() => {
-    if (userData?.email && !userData?.reqId) {
-      captureAndUpload();
-    }
-  }, []);
-
-  
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userData?.email, userData?.fullName, userData?.reqId, location.search]);
+ 
   if (!userData || !userData.fullName) {
     return (
       <div className="flex flex-col justify-center items-center p-4 h-screen text-white">
@@ -125,7 +175,7 @@ export default function Ticket() {
 
   return (
     <main className="flex flex-col justify-center items-center p-4 h-screen text-sm text-center text-white">
-     <div >
+      <div>
         <img src="/images/logo-full.webp" alt="logo coding conf" className="mb-6 text-3xl font-bold" />
       </div>
 
@@ -139,8 +189,7 @@ export default function Ticket() {
       </h1>
 
       <p className="mt-5">
-        We have uploaded your ticket to our server. <br />
-        We'll keep you posted with updates!
+        We have uploaded your ticket to our server. <br /> We&apos;ll keep you posted with updates!
       </p>
 
       <div className="flex items-center mt-8">
@@ -157,7 +206,7 @@ export default function Ticket() {
               />
               <div className="flex flex-col ml-2">
                 <h2 className="w-40 text-xl text-left truncate">{userData.fullName}</h2>
-                 <div className="flex items-center">
+                <div className="flex items-center">
                   <Github className="w-5" />
                   <p className="ml-1 text-base truncate text-slate-400">{userData.github}</p>
                 </div>
@@ -165,9 +214,9 @@ export default function Ticket() {
             </div>
           </div>
         </div>
+
+    
       </div>
-
-
     </main>
   );
 }

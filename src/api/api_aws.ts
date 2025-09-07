@@ -1,23 +1,25 @@
-const postTicket = async (data: any) => {
-  try {
-    const response = await fetch(import.meta.env.VITE_API_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(data),
-    });
+// src/api/postTicket.ts
+const postTicket = async (data: {
+  fullName: string;
+  email: string;
+  github: string;
+  avatarUrl: string;
+}) => {
+  const apiUrl = import.meta.env.VITE_API_URL as string | undefined;
+  if (!apiUrl) throw new Error("Env manquante: VITE_API_URL");
 
-    if (!response.ok) {
-      throw new Error(`Erreur API : ${response.status}`);
-    }
+  const response = await fetch(apiUrl, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
 
-    const result = await response.json();
-    return result;
-  } catch (error) {
-    console.error("Erreur API:", error);
-    throw error;
+  if (!response.ok) {
+    const text = await response.text().catch(() => "");
+    throw new Error(`Erreur API ${response.status}: ${text || "unknown"}`);
   }
+
+  return response.json();
 };
 
 export default postTicket;
