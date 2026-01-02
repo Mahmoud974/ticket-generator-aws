@@ -300,7 +300,7 @@ export default function Formulaire() {
       <h1 className="text-3xl font-bold">
         Your Journey to Coding Conf
         <br />
-        2025 Starts Here!
+        2026 Starts Here!
       </h1>
       <div className="w-full max-w-md">
         <p className="my-5">

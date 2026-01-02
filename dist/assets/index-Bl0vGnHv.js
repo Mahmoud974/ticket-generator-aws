@@ -11268,7 +11268,7 @@ function Sm() {
         children: [
           "Your Journey to Coding Conf",
           F.jsx("br", {}),
-          " 2025 Starts Here!",
+          " 2026 Starts Here!",
         ],
       }),
       F.jsxs("div", {
@@ -11539,7 +11539,7 @@ function km() {
                   }),
                   F.jsx("p", {
                     className: " ml-8 mt-2 text-slate-400",
-                    children: "Jan 31, 2025 / Austin, TX",
+                    children: "Jan 31, 2026 / Austin, TX",
                   }),
                   F.jsxs("div", {
                     className: "flex items-start my-5",

@@ -108,39 +108,43 @@ export default function Ticket() {
   }, [userData?.avatarUrl]);
 
  
-  const captureUploadAndSave = async () => {
-    if (!ticketRef.current || !userData) return;
+ 
+const captureUploadAndSave = async () => {
+  if (!ticketRef.current || !userData) return;
+  assertEnv();
 
-    // Valide les env tôt
-    assertEnv();
+  await ensureImagesLoaded();
+  const dataUrl = await toPng(ticketRef.current);
 
-    await ensureImagesLoaded();
+  const cleanName = userData.fullName.replace(/\s+/g, "-").replace(/[^\w-]/g, "");
+  if (SHOULD_DOWNLOAD_LOCAL) {
+    downloadLocal(dataUrl, `${cleanName}_ticket.png`);
+  }
+ 
+  const uploaded = await uploadToCloudinary(dataUrl, cleanName);
 
-    
-    const dataUrl = await toPng(ticketRef.current);
+  
+  await postTicket({
+    fullName: userData.fullName,
+    email: userData.email,
+    github: userData.github,
+    avatarUrl: uploaded.secure_url,  
+  });
 
-    const cleanName = userData.fullName
-      .replace(/\s+/g, "-")
-      .replace(/[^\w-]/g, "");
+  console.log("✅ Ticket enregistré avec URL Cloudinary:", uploaded.secure_url);
+};
 
-    
-    if (SHOULD_DOWNLOAD_LOCAL) {
-      downloadLocal(dataUrl, `${cleanName}_ticket.png`);
-    }
+// useEffect déclencheur
+useEffect(() => {
+  if (!userData?.email || !userData?.fullName) return;
+  if (hasRunRef.current) return; // stoppe les doublons
+  hasRunRef.current = true;
 
-     
-    const uploaded = await uploadToCloudinary(dataUrl, cleanName);
+  captureUploadAndSave().catch((e) => {
+    console.error("❌ Échec capture/upload:", e);
+  });
+}, [userData?.email, userData?.fullName, userData?.reqId]);
 
-   
-    await postTicket({
-      fullName: userData.fullName,
-      email: userData.email,
-      github: userData.github,
-      avatarUrl: uploaded.secure_url,
-    });
-
-    console.log("✅ Ticket uploadé (Cloudinary) & enregistré via l’API:", uploaded.secure_url);
-  };
 
    
   useEffect(() => {
@@ -197,7 +201,7 @@ export default function Ticket() {
           <img src="/images/pattern-ticket.webp" alt="ticket background" className="w-full" />
           <div className="absolute top-2/4 left-1/4 mt-2 ml-10 text-center transform -translate-x-1/2 -translate-y-1/2">
             <img src="/images/logo-full.webp" alt="logo coding conf" className="text-3xl font-bold" />
-            <p className="mt-2 ml-8 text-slate-400">Juin 19, 2026 / Austin, TX</p>
+            <p className="mt-2 ml-8 text-slate-400">Juin 19, 2027 / Austin, TX</p>
             <div className="flex items-start my-5">
               <img
                 src={photoURL || "/images/image-avatar.jpg"}
