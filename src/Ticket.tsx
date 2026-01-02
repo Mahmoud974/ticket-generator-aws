@@ -91,13 +91,13 @@ export default function Ticket() {
   }, [userData, navigate]);
 
   useEffect(() => {
-    // Prépare l’avatar pour l’affichage du ticket uniquement
+  
     let blobUrl: string | null = null;
     if (userData?.avatarUrl instanceof File) {
       blobUrl = URL.createObjectURL(userData.avatarUrl);
       setPhotoURL(blobUrl);
     } else if (typeof userData?.avatarUrl === "string") {
-      // on garde l’URL fournie par l’utilisateur (pas l’URL Cloudinary du ticket)
+     
       setPhotoURL(userData.avatarUrl);
     } else {
       setPhotoURL(null);

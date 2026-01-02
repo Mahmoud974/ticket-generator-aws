@@ -22,7 +22,7 @@ export default function Formulaire() {
   const navigate = useNavigate();
   const ticketRef = useRef<HTMLDivElement>(null);
 
-  // ---- Limites & helpers ----
+ 
   const MAX_BYTES = 500 * 1024;
   const formatBytes = (n: number) => {
     if (n < 1024) return `${n} B`;
@@ -33,8 +33,8 @@ export default function Formulaire() {
   // input file partagé (Add/Change)
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const openFileDialog = () => {
-    setFormErrors((e) => ({ ...e, avatarUrl: "" })); // clear erreur
-    if (fileInputRef.current) fileInputRef.current.value = ""; // autoriser re-sélection même fichier
+    setFormErrors((e) => ({ ...e, avatarUrl: "" }));  
+    if (fileInputRef.current) fileInputRef.current.value = "";  
     fileInputRef.current?.click();
   };
 
@@ -269,7 +269,7 @@ export default function Formulaire() {
     if (validateForm()) {
       const reqId = `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
       setUserData({ fullName, email, github, avatarUrl, reqId });
-      postTicket({ fullName, email, github, avatarUrl: avatarUrl?.name, reqId });
+      postTicket({ fullName, email, github, avatarUrl: avatarUrl?.name || "" });
 
       setForceUpdate((prev) => prev + 1);
 
