@@ -1,67 +1,111 @@
-<div align="center">
 
-# ☁️ Ticket Generator — DevOps & Serverless AWS
 
-### Architecture serverless, CI/CD, automatisation et déploiement cloud
+# ☁️ Ticket Generator — DevOps & Cloud AWS
 
-</div>
+### Architecture serverless · CI/CD · Automatisation · Observabilité · Sécurité
 
----
 
-## 🎯 Objectif DevOps
-
-Ce projet a été conçu pour mettre en pratique une chaîne complète de livraison et d’exploitation d’une application cloud moderne.
-
-L’objectif n’est pas uniquement de développer une application React, mais surtout de démontrer des compétences en :
-
-- conception d’architecture serverless
-- déploiement cloud sur AWS
-- automatisation CI/CD
-- gestion des services managés AWS
-- stockage et persistance des données
-- automatisation de workflows
-- distribution de contenu via CDN
-- supervision et exploitation d’une application cloud
-- sécurisation des accès et des échanges
 
 ---
 
 ## 🏗️ Architecture Cloud
 
-<img
-  src="public/images/architecture-serverless.png"
-  width="900"
-  alt="Architecture serverless AWS"
-/>
 
-### Architecture utilisée
 
-```text
-Utilisateur
-    |
-    v
-React + TypeScript
-    |
-    v
-AWS Amplify
-    |
-    v
-API Gateway
-    |
-    v
-AWS Lambda
-   / \
-  /   \
- v     v
-DynamoDB   Amazon S3
-              |
-              v
-         Cloudflare CDN
+![Architecture serverless AWS du projet Ticket Generator](public/images/schema.png)
 
-AWS Lambda
-    |
-    v
-n8n
- / \
-v   v
-EmailJS   Notion
+
+
+---
+
+## 🎯 Objectif du projet
+
+Ce projet a été conçu avant tout pour mettre en pratique des compétences **DevOps et Cloud AWS** autour d’une application réelle.
+
+L’objectif principal était de construire une chaîne complète allant du code jusqu’à la production :
+
+- déploiement automatisé
+- architecture serverless
+- gestion de services AWS managés
+- persistance des données
+- automatisation des workflows
+- distribution de contenu
+- supervision de l’application
+- sécurisation des accès
+- intégration continue
+
+L’application React sert ici de **workload** pour tester et exploiter cette architecture cloud.
+
+---
+
+
+
+# 🚀 Compétences DevOps mises en pratique
+
+
+
+## ☁️ Cloud AWS
+
+Services utilisés :
+
+- **AWS Lambda** — exécution serverless de la logique métier
+- **Amazon API Gateway** — exposition de l’API REST
+- **Amazon DynamoDB** — stockage NoSQL des participants
+- **Amazon S3** — stockage objet des tickets générés
+- **AWS Amplify** — hébergement du frontend et déploiement continu
+
+Architecture pensée pour limiter la gestion d’infrastructure traditionnelle et exploiter des services managés AWS.
+
+---
+
+
+
+## 🔁 STACKS
+
+
+
+# 🧱 Stack DevOps / Cloud
+
+
+| Domaine              | Technologies         |
+| -------------------- | -------------------- |
+| Cloud                | AWS                  |
+| Compute              | AWS Lambda           |
+| API Management       | Amazon API Gateway   |
+| Database             | Amazon DynamoDB      |
+| Object Storage       | Amazon S3            |
+| Hosting              | AWS Amplify          |
+| CI/CD                | AWS Amplify + GitHub |
+| Automation           | n8n                  |
+| CDN                  | Cloudflare           |
+| Monitoring           | Amazon CloudWatch    |
+| Version Control      | Git / GitHub         |
+| Frontend workload    | React.js             |
+| Language             | TypeScript           |
+| Styling              | TailwindCSS          |
+| Validation           | Zod                  |
+| Form Management      | React Hook Form      |
+| Email                | EmailJS              |
+| External Integration | Notion API           |
+
+
+
+
+## 🏗️ Application
+
+
+
+![Application ticket sur AWS](public/images/ticket-app.png)
+
+
+
+## 🎯 Objectif
+
+Créer une expérience d'inscription fluide et automatisée permettant aux participants de :
+
+- Remplir un **formulaire d'inscription sécurisé** avec validation en temps réel.
+- Recevoir instantanément un **ticket personnalisé** par email.
+- Être automatiquement **enregistrés dans la base de données** de l'événement.
+
+> 🧠 *Une architecture serverless pensée pour la **scalabilité** et l'**automatisation**.*
+
